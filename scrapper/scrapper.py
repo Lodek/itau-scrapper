@@ -1,6 +1,7 @@
-from pages import LoginPage, KeypadPage, BasePage
+from pages import LoginPage, KeypadPage, BasePage, HomePage, TransactionPage
 
 from selenium import webdriver
+from datetime import date
 import os
 
 class Properties:
@@ -22,6 +23,9 @@ def main():
     props = Properties.from_env()
     LoginPage().login(props.agency, props.account)
     KeypadPage().enter_password(props.password)
+    HomePage().dismiss_popup().view_transactions()
+    TransactionPage().filter_by_date(date(2020, 3, 1))
+
     
 
 def init():

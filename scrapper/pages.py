@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.keys import Keys
 
 def convert_to_select(element_getter):
     """Decorator that receives a getter function for an element and return
@@ -74,10 +75,22 @@ class KeypadPage(BasePage):
 
 class HomePage(BasePage):
 
+    @property
+    def popup_map(self):
+        return self.driver.find_element_by_name('mapa_lightbox_banner_02')
+
     transactions_button = property(BasePage._by_id_factory('VerExtrato'))
+
+    def dismiss_popup(self):
+        map = self.popup_map
+        if map:
+            js = 'popFechar("02")'
+            self.driver.execute_script(js)
+        return self
 
     def view_transactions(self):
         self.transactions_button.click()
+        return self
 
 
 class TransactionModel:
@@ -97,20 +110,28 @@ class TransactionPage(BasePage):
     def transactions(self):
         return self.driver.find_elements_by_class_name('extrato-tabela-pf')
 
+    @property
+    def filter_button(self):
+        return self.driver.find_element_by_class_name('month-picker__button')
+
     period_select = property(convert_to_select(BasePage._by_id_factory('select-192')))
     month_picker = property(BasePage._by_id_factory('monthPickerBtn363'))
     date_input = property(BasePage._by_id_factory('inputDate363'))
 
+
     def period_by_month(self):
         self.period_select.select_by_value('mesCompleto')
 
-    def set_date(self, month, year):
+    def filter_by_date(self, date):
+        """
+        Perform flow of filtering by month/year. Expect date object
+        """
         self.period_select.select_by_value('mesCompleto')
         self.month_picker.click()
-        date_text = f'{month}{year}'
+        date_text = f'{date.month:02}{date.year:04}'
         self.date_input.send_keys(date_text)
+        self.filter_button.click()
+        return self
 
 
-#TODO Map filter button
 #TODO Run stuffs
-#TODO Receive date object for set_date
